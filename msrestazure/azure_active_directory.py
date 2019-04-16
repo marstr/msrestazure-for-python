@@ -30,6 +30,7 @@ import logging
 import re
 import time
 import warnings
+import requests_oauthlib as oauth
 try:
     from urlparse import urlparse, parse_qs
 except ImportError:
@@ -45,8 +46,26 @@ from msrest.exceptions import AuthenticationError, raise_with_traceback
 
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 from msrestazure.azure_configuration import AzureConfiguration
+from msal.extensions import SharedTokenCacheProvider
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class SharedCacheCredential(OAuthTokenAuthentication):
+    def __init__(self, scopes):
+        self._client_id = ''
+        self._scopes = scopes
+        self._provider = SharedTokenCacheProvider(client_id=self._client_id)
+
+    def refresh_session(self, session=None):
+        return self.signed_session(session)
+
+    def signed_session(self, session=None):
+        session = session or requests.Session()
+        token = self._provider.get_token(self._scopes)
+        session.auth = oauth.OAuth2(self._client_id, token)
+        return session
+
 
 class AADMixin(OAuthTokenAuthentication):
     """Mixin for Authentication object.

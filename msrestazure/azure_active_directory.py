@@ -45,14 +45,14 @@ from msrest.exceptions import AuthenticationError, raise_with_traceback
 
 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD, AZURE_PUBLIC_CLOUD
 from msrestazure.azure_configuration import AzureConfiguration
-from msal.extensions import SharedTokenCacheProvider
+from msal_extensions import SharedTokenCacheProvider
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class SharedCacheCredential(Authentication):
-    def __init__(self, client_id, scopes):
-        self._client_id = client_id
+    def __init__(self, scopes, client_id=None):
+        self._client_id = client_id or '04b07795-8ddb-461a-bbee-02f9e1bf7b46'
         self._scopes = scopes
         self._provider = SharedTokenCacheProvider(client_id=self._client_id)
 
